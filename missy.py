@@ -2,65 +2,69 @@
 import random
 
 import networkx as nx
-import wget as wget
+# import wget as wget
 import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
 
-# file = wget.download('http://snap.stanford.edu/data/as20000102.txt.gz')
 
-G = nx.read_edgelist('/Users/westlands/PycharmProjects/MoCS/Assn3/Data/as20000102.txt')
+def Get_Configuration_Model():
+    global G, degree_freq, degrees, adj_list
+    # file = wget.download('http://snap.stanford.edu/data/as20000102.txt.gz')
+    G = nx.read_edgelist('/home/missy/Documents/ComplexSystems/MoCS/Assn3/MoCS_Assn_3/Data/as20000102.txt')
 
-degree_freq = nx.degree_histogram(G)
+    stublist = []
+    ind = 0
+    for deg in range(len(degree_freq) - 1):
+        for i in range(degree_freq[deg]):
+            seq = [ind] * deg
+            stublist.extend(seq)
+            ind = ind + 1
+    adj_list = list()
+    random.shuffle(stublist)
+    for i in range(len(stublist) - 1):
+        if i % 2 == 0:
+            adj_list.append((stublist[i], stublist[i + 1]))
+
+    df = pd.DataFrame.from_records(adj_list, columns=['start', 'edge'])
+    df.to_csv('Data/stubs.csv')
+    configuration_model = nx.MultiGraph()  # nx.parse_edgelist(adj_list)
+    configuration_model.add_edges_from(adj_list)
+    return configuration_model
+
+
+configuration_model = Get_Configuration_Model()
+degree_freq = nx.degree_histogram(configuration_model)
 degrees = range(len(degree_freq))
-
-nodelist = np.arange(0, len(degree_freq)-1)
-stublist = []
-
-for node in nodelist:
-    for i in range(degree_freq[node]):
-        stublist.append(node)
-
-adj_list = list()
-random.shuffle(stublist)
-for i in range(len(stublist)-1):
-    if i % 2 == 0:
-        adj_list.append((stublist[i], stublist[i+1]))
-
-df = pd.DataFrame(stublist, columns=['edge'])
-df.to_csv('Data/stubs.csv')
-configuration_model = nx.Graph() # nx.parse_edgelist(adj_list)
-configuration_model.add_edges_from(adj_list)
 
 plt.figure(figsize=(8, 6))
 plt.loglog(degrees[1:], degree_freq[1:], 'ko-')
 plt.xlabel('Degree')
 plt.ylabel('Counts')
-# plt.show()
 
 # Parameters of the model
-beta = 0.0025  # transmission rate
-alpha = 0.01  # recovery rate
+beta = 0.3 # transmission rate
+alpha = 1.0  # recovery rate
 
+rho = 0.4
 I0 = 0.01  # initial fraction of infected nodes
 S0 = 1.0 - I0
-# R0 = 0.0
+Iv0 = 0
+Sv0 = 0
+
 
 # Initial conditions
 G_deg_sum = [a * b for a, b in zip(degree_freq, range(0, len(degree_freq)))]
 total_degree = sum(G_deg_sum)
-avg_k = sum(G_deg_sum) / G.number_of_nodes()
+avg_k = sum(G_deg_sum) / configuration_model.number_of_nodes()
 print(avg_k)
 Sk = np.zeros((len(degree_freq)))  # array for expected S_k
 Ik = np.zeros((len(degree_freq)))  # array for expected I_k
-# Rk = np.zeros((len(degree_freq))) #array for expected R_k
 
 for k in range(len(degree_freq)):
     # set an expectation of I0 fraction of nodes of degree k infectious
     Sk[k] = degree_freq[k] * S0
     Ik[k] = degree_freq[k] * I0
-    # Rk[k] = degree_freq[k]*R0
-
 # Run the model
 
 # Discrete steps of Euler's methods
