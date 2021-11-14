@@ -1,12 +1,12 @@
 # Import networkx and a network file
 import networkx as nx
-import wget as wget
+# import wget as wget
 import matplotlib.pyplot as plt
 import numpy as np
 
 # file = wget.download('http://snap.stanford.edu/data/as20000102.txt.gz')
 
-G = nx.read_edgelist('/Users/westlands/PycharmProjects/MoCS/Assn3/Data/as20000102.txt')
+G = nx.read_edgelist('/home/missy/Documents/ComplexSystems/MoCS/Assn3/MoCS_Assn_3/Data/as20000102.txt')
 
 degree_freq = nx.degree_histogram(G)
 degrees = range(len(degree_freq))
@@ -17,7 +17,7 @@ plt.ylabel('Counts')
 plt.show()
 
 # Parameters of the model
-beta = 0.0025  # transmission rate
+beta = 0.025  # transmission rate
 alpha = 0.01  # recovery rate
 
 I0 = 0.01  # initial fraction of infected nodes
