@@ -27,8 +27,8 @@ for i in range(len(stublist)-1):
     if i % 2 == 0:
         adj_list.append((stublist[i], stublist[i+1]))
 
-df = pd.Dataframe(stublist, columns=['edge_start', 'edge_end'])
-df.to_csv()
+df = pd.DataFrame(stublist, columns=['edge'])
+df.to_csv('Data/stubs.csv')
 configuration_model = nx.Graph() # nx.parse_edgelist(adj_list)
 configuration_model.add_edges_from(adj_list)
 
@@ -66,9 +66,9 @@ for k in range(len(degree_freq)):
 # Discrete steps of Euler's methods
 res = []  # list of results
 history = []
-S = S0;
-I = I0;  # set initial conditions
-h = 0.1;  # timestep
+S = S0
+I = I0  # set initial conditions
+h = 0.1  # timestep
 T = np.arange(1, 500 / h)
 for t in T:
 
