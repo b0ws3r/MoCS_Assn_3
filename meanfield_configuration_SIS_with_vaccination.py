@@ -73,7 +73,7 @@ def part_d_initial_conditions(degree_freq):
     return Sk, Svk, Ik, Ivk, S0, Sv0, I0, Iv0
 
 
-# configuration_model = graph_exponential_dist()
+# configuration_model = graph_exponential_dist() # part b
 configuration_model = graph_geometric_dist() # Part c
 
 # gather some info about the model
@@ -96,11 +96,11 @@ plt.ylabel('Counts')
 h = .1  # timestep
 alpha = 1*h
 beta = .3*h  # transmission rate
-rho = 0.1
+rho = 0.00001
 
 # Initial conditions
-Sk, Svk, Ik, Ivk, S0, Sv0, I0, Iv0 = og_initial_conditions(degree_freq)
-# Sk, Svk, Ik, Ivk, S0, Sv0, I0, Iv0  = part_d_initial_conditions(degree_freq)
+Sk, Svk, Ik, Ivk, S0, Sv0, I0, Iv0 = og_initial_conditions(degree_freq) # use for parts b and c
+# Sk, Svk, Ik, Ivk, S0, Sv0, I0, Iv0  = part_d_initial_conditions(degree_freq)  # use for part d
 
 # Run the model
 # Discrete steps of Euler's methods
@@ -161,6 +161,7 @@ ax.plot(h * T, St, label='Susceptible')
 ax.plot(h * T, It, label='Infectious')
 ax.plot(h * T, Ivt, label='Infectious Vaxxed')
 ax.plot(h * T, Svt, label='Susceptible Vaxxed')
+ax.set_title(f'rho = {rho}')
 # ax.plot(h*T,Rt, 'g', label='Recovered')
 ax.legend()
 fig.show()
