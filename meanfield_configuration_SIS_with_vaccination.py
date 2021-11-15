@@ -9,57 +9,19 @@ import numpy as np
 import pandas as pd
 
 
-def Get_Configuration_Model(degree_freq):
-    # file = wget.download('http://snap.stanford.edu/data/as20000102.txt.gz')
-    stublist = []
-    ind = 0
-    for deg in range(len(degree_freq) - 1):
-        for i in range(degree_freq[deg]):
-            seq = [ind] * deg
-            stublist.extend(seq)
-            ind = ind + 1
-    adj_list = list()
-    random.shuffle(stublist)
-    for i in range(len(stublist) - 1):
-        if i % 2 == 0:
-            adj_list.append((stublist[i], stublist[i + 1]))
-    # df = pd.DataFrame.from_records(adj_list, columns=['start', 'edge'])
-    # df.to_csv('Data/stubs.csv')
-    configuration_model = nx.MultiGraph()  # nx.parse_edgelist(adj_list)
-    configuration_model.add_edges_from(adj_list)
-    return configuration_model
-
-
-def uniform_attachment(G):
-    # pick attachment
-    nodes = 1 if G.number_of_nodes() == 0 else G.number_of_nodes()
-    weights = np.random.geometric(0.25, nodes)
-    neighbor = random.choices(G.nodes, weights=np.random.geometric(0.25, weights), k=1)
-    # add new node
-    new_node = G.number_of_nodes()
-    G.add_node(new_node)
-    # pick attachment
-    # add edge
-    G.add_edge(new_node, neighbor)
-    # update degrees
-    G.nodes[new_node]['state'] = 1
-    G.nodes[neighbor]['state'] = 1 + G.nodes[neighbor]['state']
-    return (G)
-
-
 def graph_exponential_dist():
     z = [int(np.random.exponential(scale=5)) for i in range(1000)]
-    if sum(z)%2 != 0:
+    if sum(z) % 2 != 0:
         z[0] += 1
     configuration_model = nx.configuration_model(z)  # Get_Configuration_Model(z)
     return configuration_model
 
 
 def graph_geometric_dist():
-    z = [int(np.random.geometric(p=0.25)) for i in range(1000)]
-    if sum(z)%2 != 0:
+    z = [np.random.geometric(p=0.25) for i in range(1000)]
+    if sum(z) % 2 != 0:
         z[0] += 1
-    configuration_model = nx.configuration_model(z) # Get_Configuration_Model(z)
+    configuration_model = nx.configuration_model(z)  # Get_Configuration_Model(z)
     return configuration_model
 
 
@@ -105,14 +67,14 @@ def part_d_initial_conditions(degree_freq):
         # set an expectation of I0 fraction of nodes of degree k infectious
         Sk[k] = degree_freq[k] * S0
         if k > k_60_0:
-            Svk[k] = 1 #degree_freq[k]
+            Svk[k] = 1
         Ik[k] = degree_freq[k] * I0
         Ivk[k] = degree_freq[k] * Iv0
     return Sk, Svk, Ik, Ivk, S0, Sv0, I0, Iv0
 
 
 # configuration_model = graph_exponential_dist()
-configuration_model = graph_geometric_dist()
+configuration_model = graph_geometric_dist() # Part c
 
 # gather some info about the model
 degree_freq = nx.degree_histogram(configuration_model)
@@ -129,26 +91,26 @@ plt.loglog(degrees[1:], degree_freq[1:], 'ko-')
 plt.xlabel('Degree')
 plt.ylabel('Counts')
 
+
 # Parameters of the model
-alpha = .10
-beta = .03  # transmission rate
+h = .1  # timestep
+alpha = 1*h
+beta = .3*h  # transmission rate
 rho = 0.1
-rho = 0.001
 
 # Initial conditions
-# Sk, Svk, Ik, Ivk, S0, Sv0, I0, Iv0 = og_initial_conditions(degree_freq)
-Sk, Svk, Ik, Ivk, S0, Sv0, I0, Iv0  = part_d_initial_conditions(degree_freq)
+Sk, Svk, Ik, Ivk, S0, Sv0, I0, Iv0 = og_initial_conditions(degree_freq)
+# Sk, Svk, Ik, Ivk, S0, Sv0, I0, Iv0  = part_d_initial_conditions(degree_freq)
 
 # Run the model
 # Discrete steps of Euler's methods
 res = []  # list of results
 history = []
 S = S0
-I = I0 # set initial conditions
+I = I0  # set initial conditions
 Iv = Iv0
 Sv = Sv0
-h = .01  # timestep
-T = np.arange(1, 500 / h)
+T = np.arange(1, 100 / h)
 for t in T:
 
     # Calculate the mean-field
@@ -167,7 +129,7 @@ for t in T:
     for k in range(len(degree_freq)):
         # calculate speeds+ alpha * Ik[k]
         delta_Sk = -beta * k * theta * Sk[k] + alpha * Ik[k]
-        delta_Svk = (1 - rho) * -beta * k * theta * Ivk[k] + alpha * Ivk[k]
+        delta_Svk = (1 - rho) * -beta * k * theta * Svk[k] + alpha * Ivk[k]
         delta_Ik = beta * k * theta * Sk[k] - alpha * Ik[k]
         delta_Ivk = (1 - rho) * beta * k * theta * Svk[k] - alpha * Ivk[k]
 
@@ -202,4 +164,5 @@ ax.plot(h * T, Svt, label='Susceptible Vaxxed')
 # ax.plot(h*T,Rt, 'g', label='Recovered')
 ax.legend()
 fig.show()
-fig.savefig('Data/It')
+rhoStr = str(rho).replace('.', '')
+fig.savefig(f'Data/It_b_{rhoStr}')
